@@ -1,7 +1,7 @@
 <?php
 
 //Path to PHPUnit
-define('PHPUNIT_PATH', '/usr/local/Cellar/php/5.3.8/bin/phpunit');
+define('PHPUNIT_PATH', '/usr/bin/phpunit');
 /*
 Installation of PHPUnit:
     sudo pear config-set auto_discover 1
@@ -9,7 +9,7 @@ Installation of PHPUnit:
 */
 
 //Path to PHP Code Sniffer
-define('PHPCS_PATH', '/usr/local/Cellar/php/5.3.8/bin/phpcs');
+define('PHPCS_PATH', '/usr/bin/phpcs');
 /*
 Installation of PHPCS:
     pear install PHP_CodeSniffer
@@ -30,5 +30,5 @@ Set Symfony2 as your default coding standard:
 
 
 //Path to PHP
-define('PHP_PATH', '/usr/local/Cellar/php/5.3.8/bin/php');
+define('PHP_PATH', '/usr/bin/php');
 
