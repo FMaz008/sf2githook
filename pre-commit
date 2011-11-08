@@ -32,14 +32,6 @@ if(!file_exists(PHP_PATH)){
 
 
 
-	
-//## Running PHP -l on the project
-//########################################
-
-echo "Checking PHP syntax error ...";
-echo PHP_EOL;
-
-
 //Extract the list of the commit files
 $output = array();
 $rc     = 0;
@@ -49,7 +41,12 @@ else           $against = '4b825dc642cb6eb9a060e54bf8d69288fbee4904';
 
 exec('git diff-index --cached --name-only '. $against, $output);
 
+	
+//## Running PHP -l on the project
+//########################################
 
+echo "Checking PHP syntax error ...";
+echo PHP_EOL;
 
 //Check files
 $needle = '/(\.php|\.module|\.install)$/';
@@ -78,6 +75,44 @@ foreach ($output as $file) {
 
 echo '√ No syntax error!';
 echo PHP_EOL;
+
+
+
+//## Running PHP CodeSniffer on the project
+//########################################
+
+echo "Checking PHP coding standard violation ...";
+echo PHP_EOL;
+
+//Check files
+$needle = '/(\.php|\.module|\.install)$/';
+foreach ($output as $file) {
+
+    if (!preg_match($needle, $file) || !file_exists($file)) {
+        // only check php files
+        continue;
+    }
+    
+    echo '    ' . $file . PHP_EOL;
+
+    $lint_output = array();
+    $rc          = 0;
+    exec(PHPCS_PATH . ' -l '. escapeshellarg($file) . ' 2> /dev/null', $lint_output, $rc);
+    if ($rc == 0) {
+        continue;
+    } else {
+        echo PHP_EOL;
+        echo '(-!-) Coding standard violation found :' . PHP_EOL;
+        echo implode(PHP_EOL, $lint_output);
+        exit(1);
+    }
+
+}
+
+echo '√ No coding standard violation!';
+echo PHP_EOL;
+
+
 
 
 //## Running PHPUnit test on the project
