@@ -55,11 +55,13 @@ exec('git diff-index --cached --name-only '. $against, $output);
 $needle = '/(\.php|\.module|\.install)$/';
 foreach ($output as $file) {
 
-	if (!preg_match($needle, $file)) {
+	if (!preg_match($needle, $file) || !file_exists($file)) {
         // only check php files
         continue;
     }
     
+    echo '    ' . $file . PHP_EOL;
+
 	$lint_output = array();
     $rc          = 0;
     exec(PHP_PATH . ' -l '. escapeshellarg($file) . ' 2> /dev/null', $lint_output, $rc);
@@ -91,7 +93,7 @@ $rc     = 0;
 exec(PHPUNIT_PATH . ' -c app/phpunit.xml.dist --tap', $output, $rc); // cwd is assumed here
 
 // if the build failed, output a summary and fail
-if ($returnCode !== 0) {
+if ($rc !== 0) {
 
     // output the status
     echo '(-!-) Test suite failed :' . PHP_EOL;
