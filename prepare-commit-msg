@@ -1,0 +1,18 @@
+#!/usr/bin/php
+<?php
+echo PHP_EOL;
+
+require('hook-lib.php');
+
+
+//## Obtain the current branch name
+$branchName = getCurrentBranchName();
+
+$msg = file_get_contents($argv[1]);
+$msg = $branchName . ' - ' . $msg;
+
+file_put_contents($argv[1], $msg);
+
+echo 'Suggesting "' . $branchName . ' - " as prefix for the commit message.';
+echo PHP_EOL;
+exit(0);
