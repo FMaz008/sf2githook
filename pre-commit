@@ -2,76 +2,64 @@
 <?php
 echo PHP_EOL;
 
-//## Loading & checking configuration
-//########################################
-if(file_exists('.git/hooks/hook-config.php')){
-	require('hook-config.php');
-    require('hook-lib.php');
-}else{
-	echo "/!\\ Could not load the hooks configuration at " . getcwd() . ".git/hooks/hook-config.php.";
-    echo PHP_EOL;
-	exit(1);
-}
-
-
-//Validate the configuration IP.
-if(!file_exists(PHPUNIT_PATH)){
-	echo "/!\\ PHPUnit could not be located at {PHPUNIT_PATH}. Check the .git/hooks/hook-config.php file.";
-	echo PHP_EOL;
-	exit(FAILURE);
-}
-if(!file_exists(PHPCS_PATH)){
-	echo "/!\\ PHPCodeSniffer could not be located at {PHPUNIT_PATH}. Check the .git/hooks/hook-config.php file.";
-	echo PHP_EOL;
-	exit(FAILURE);
-}
-if(!file_exists(PHP_PATH)){
-	echo "/!\\ PHP could not be located at {PHPUNIT_PATH}. Check the .git/hooks/hook-config.php file.";
-	echo PHP_EOL;
-	exit(FAILURE);
-}
+require('hook-lib.php');
 
 
 
-
-
+//Get all the file involved in the commit
 $arrCommitFiles = getCommitFileList();
+
 
 	
 //## Running PHP -l on the project
 //########################################
 
+
 echo "Checking PHP syntax error ...";
 echo PHP_EOL;
 
-//Check files
-$needle = '/(\.php)$/';
-foreach ($arrCommitFiles as $file) {
+if (PHP_PATH === false) {
 
-	if (!preg_match($needle, $file) || !file_exists($file)) {
-        // only check php files
-        continue;
-    }
-    
-    echo '    '  . ' - ' . $file . PHP_EOL;
+    echo '    ' . '√ Not configured, skipping.';
+    echo PHP_EOL;
 
-	$lint_output = array();
-    $rc          = 0;
-    exec(PHP_PATH . ' -l '. escapeshellarg($file) . ' 2> /dev/null', $lint_output, $rc);
-    if ($rc == SUCCESS) {
-        continue;
-    } else {
-    	echo PHP_EOL;
-    	echo '(-!-) Syntax check failed :' . PHP_EOL;
-    	echo implode(PHP_EOL, $lint_output);
-    	exit(FAILURE);
+} else {
+
+    //Validate the configuration.
+    if(!file_exists(PHP_PATH)){
+        echo "/!\\ PHP could not be located at " . PHPUNIT_PATH . ". Check the .git/hooks/hook-config.php file.";
+        echo PHP_EOL;
+        exit(FAILURE);
     }
 
+    //Check files
+    $needle = '/(\.php)$/';
+    foreach ($arrCommitFiles as $file) {
+
+    	if (!preg_match($needle, $file) || !file_exists($file)) {
+            // only check php files
+            continue;
+        }
+        
+        echo '    '  . ' - ' . $file . PHP_EOL;
+
+    	$lint_output = array();
+        $rc          = 0;
+        exec(PHP_PATH . ' -l '. escapeshellarg($file) . ' 2> /dev/null', $lint_output, $rc);
+        if ($rc == SUCCESS) {
+            continue;
+        } else {
+        	echo PHP_EOL;
+        	echo '(-!-) Syntax check failed :' . PHP_EOL;
+        	echo implode(PHP_EOL, $lint_output);
+        	exit(FAILURE);
+        }
+
+    }
+
+    echo '    ' . '√ No syntax error!';
+    echo PHP_EOL;
 }
-
-echo '    ' . '√ No syntax error!';
-echo PHP_EOL;
-
 
 
 //## Running PHP CodeSniffer on the project
@@ -80,35 +68,48 @@ echo PHP_EOL;
 echo "Checking PHP coding standard violation ...";
 echo PHP_EOL;
 
-//Check files
-$needle = '/(\.php|\.module|\.install)$/';
-foreach ($arrCommitFiles as $file) {
+if (PHPCS_PATH === false) {
 
-    if (!preg_match($needle, $file) || !file_exists($file)) {
-        // only check php files
-        continue;
-    }
-    
-    echo '    ' . ' - ' . $file . PHP_EOL;
+    echo '    ' . '√ Not configured, skipping.';
+    echo PHP_EOL;
 
-    $output = array();
-    $rc          = 0;
-    exec(PHPCS_PATH . ' -l '. escapeshellarg($file) . ' 2> /dev/null', $output, $rc);
-    if ($rc == SUCCESS) {
-        continue;
-    } else {
+} else {
+
+    //Validate the configuration.
+    if (!file_exists(PHPCS_PATH)) {
+        echo "/!\\ PHPCodeSniffer could not be located at " . PHPUNIT_PATH . ". Check the .git/hooks/hook-config.php file.";
         echo PHP_EOL;
-        echo '(-!-) Coding standard violation found :' . PHP_EOL;
-        echo implode(PHP_EOL, $output);
         exit(FAILURE);
     }
 
+    //Check files
+    $needle = '/(\.php|\.module|\.install)$/';
+    foreach ($arrCommitFiles as $file) {
+
+        if (!preg_match($needle, $file) || !file_exists($file)) {
+            // only check php files
+            continue;
+        }
+        
+        echo '    ' . ' - ' . $file . PHP_EOL;
+
+        $output = array();
+        $rc          = 0;
+        exec(PHPCS_PATH . ' -l '. escapeshellarg($file) . ' 2> /dev/null', $output, $rc);
+        if ($rc == SUCCESS) {
+            continue;
+        } else {
+            echo PHP_EOL;
+            echo '(-!-) Coding standard violation found :' . PHP_EOL;
+            echo implode(PHP_EOL, $output);
+            exit(FAILURE);
+        }
+
+    }
+
+    echo '    ' . '√ No coding standard violation!';
+    echo PHP_EOL;
 }
-
-echo '    ' . '√ No coding standard violation!';
-echo PHP_EOL;
-
-
 
 
 //## Running PHPUnit test on the project
@@ -117,39 +118,63 @@ echo PHP_EOL;
 echo "Processing PHPUnit tests suite ...";
 echo PHP_EOL;
 
-$branchName = getCurrentBranchName();
-if ($branchName == 'develop') {
-    
-    // execute unit tests (it is assumed that a phpunit.xml configuration is present 
-    // in the root of the project)
-    $output = array();
-    $rc     = 0;
-    exec(PHPUNIT_PATH . ' -c app/phpunit.xml.dist --tap', $output, $rc); // cwd is assumed here
+if (PHPUNIT_PATH === false) {
 
-    // if the build failed, output a summary and fail
-    if ($rc == FAILURE) {
-
-        // output the status
-        echo '(-!-) Test suite failed :' . PHP_EOL;
-        foreach($output as $line){
-        	if(!in_array(substr($line, 0, 3), array('ok ', 'TAP', '  -'))){
-        		echo $line . PHP_EOL;
-        	}
-        }
-
-        // abort the commit
-        exit(FAILURE);
-    }
-
-    echo '    ' . '√ All test succeeded!';
+    echo '    ' . '√ Not configured, skipping.';
     echo PHP_EOL;
 
 } else {
-    echo '    ' . 'Only applied for develop branch, skipping.';
-    echo PHP_EOL;
+    //Validate the configuration.
+    if (!file_exists(PHPUNIT_PATH)) {
+        echo "/!\\ PHPUnit could not be located at " . PHPUNIT_PATH . ". Check the .git/hooks/hook-config.php file.";
+        echo PHP_EOL;
+        exit(FAILURE);
+    }
+
+    $branchName = getCurrentBranchName();
+    $arrAllowedBranch = explode(';', PHPUNIT_BRANCH);
+    if (PHPUNIT_BRANCH !== false && !in_array($branchName, $arrAllowedBranch)) {
+
+        echo '    ' . '√ This branch does not require unit testing, skipping.';
+        echo PHP_EOL;
+
+    } else {
+
+        // execute unit tests
+        $phpUnitCmd = PHPUNIT_PATH . ' --tap';
+        if (PHPUNIT_CONFIG !== false) {
+            if (!file_exists(PHPUNIT_CONFIG)) {
+                echo "/!\\ PHPUnit configuration could not be located at " . PHPUNIT_CONFIG . ". Check the .git/hooks/hook-config.php file.";
+                echo PHP_EOL;
+                exit(FAILURE);
+            }
+            $phpUnitCmd .= ' -c ' . PHPUNIT_CONFIG;
+        }
+
+
+        $output = array();
+        $rc     = 0;
+        exec($phpUnitCmd, $output, $rc); // cwd is assumed here
+
+        // if the build failed, output a summary and fail
+        if ($rc == FAILURE) {
+
+            // output the status
+            echo '(-!-) Test suite failed :' . PHP_EOL;
+            foreach ($output as $line) {
+            	if (!in_array(substr($line, 0, 3), array('ok ', 'TAP', '  -'))) {
+            		echo $line . PHP_EOL;
+            	}
+            }
+
+            // abort the commit
+            exit(FAILURE);
+        }
+
+        echo '    ' . '√ All test succeeded!';
+        echo PHP_EOL;
+    }
 }
-
-
 
 
 echo PHP_EOL;

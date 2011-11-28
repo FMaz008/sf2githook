@@ -3,6 +3,24 @@
 define('SUCCESS', 0);
 define('FAILURE', 1);
 
+
+// Load and check the configuration
+if (!file_exists('.git/hooks/hook-config.php')){
+    echo "/!\\ Could not load the hooks configuration at " . getcwd() . ".git/hooks/hook-config.php.";
+    echo PHP_EOL;
+    exit(1);
+}
+
+require('hook-config.php');
+
+if (!defined('CONFIG_VERSION') || CONFIG_VERSION != '0.2.0') {
+    echo "/!\\ The configuration doesn't match the hooks requirement. Please check .git/hooks/hook-config.php.template to update your configuration file.";
+    echo PHP_EOL;
+    exit(1);
+}
+
+
+
 /**
  * Find the current branch name from witch the commit is beeing done.
  *

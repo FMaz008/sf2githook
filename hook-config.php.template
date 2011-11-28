@@ -1,34 +1,82 @@
 <?php
 
-//Path to PHPUnit
+// ###########################################
+// ## PHPUnit
+
+// ## Path to your PHPUnit executable.
+// ## false = disable unit test
+// ## ---
+// ## Installation of PHPUnit:
+// ##    sudo pear config-set auto_discover 1
+// ##    sudo pear install pear.phpunit.de/PHPUnit
+
 define('PHPUNIT_PATH', '/usr/bin/phpunit');
-/*
-Installation of PHPUnit:
-    sudo pear config-set auto_discover 1
-    sudo pear install pear.phpunit.de/PHPUnit
-*/
 
-//Path to PHP Code Sniffer
+
+// ## Path to test suite configuration
+// ## false = don't use the -c argument of PHPUnit.
+
+define('PHPUNIT_CONFIG', 'app/phpunit.xml.dist');
+
+
+// ## Branch for wich the unit tests must be executed
+// ## false = always run unit test
+// ## separate branches name by ;
+
+define('PHPUNIT_BRANCH', 'develop;master');
+
+
+// ###########################################
+// ## PHP CodeSniffer
+
+// ## Path to your PHPCS executable
+// ## false = disable coding standards validation
+// ## ---
+// ## Installation of PHPCS:
+// ##    pear install PHP_CodeSniffer
+// ## Installation of the Symfony2 Coding Standard:
+// ## Find your PEAR directory:
+// ##    pear config-show | grep php_dir
+// ## 
+// ## Copy, symlink or check out this repo to a folder called Symfony2 inside the phpcs Standards directory:
+// ##    cd /path/to/pear/
+// ##    cd PHP/CodeSniffer/Standards
+// ##    sudo git clone git://github.com/opensky/Symfony2-coding-standard.git Symfony2
+// ## 
+// ## Set Symfony2 as your default coding standard:
+// ##    sudo phpcs --config-set default_standard Symfony2
+
 define('PHPCS_PATH', '/usr/bin/phpcs');
-/*
-Installation of PHPCS:
-    pear install PHP_CodeSniffer
-*/
-/*
-Installation of the Symfony2 Coding Standard:
-Find your PEAR directory:
-    pear config-show | grep php_dir
-
-Copy, symlink or check out this repo to a folder called Symfony2 inside the phpcs Standards directory:
-    cd /path/to/pear/
-    cd PHP/CodeSniffer/Standards
-    sudo git clone git://github.com/opensky/Symfony2-coding-standard.git Symfony2
-
-Set Symfony2 as your default coding standard:
-    sudo phpcs --config-set default_standard Symfony2
-*/
 
 
-//Path to PHP
+// ###########################################
+// ## PHP
+
+// ## Path to PHP
+// ## ---
+// ## Path to your PHP executable
+// ## false = disable PHP syntax check
+
 define('PHP_PATH', '/usr/bin/php');
 
+
+// ##########################################
+// ## Suggest Commit Message
+
+// ## Commit message default template
+// ---
+// false = disable message suggestion
+// %b = branch name
+// %o = original/default message
+
+define('SUGGEST_COMMIT_MSG', '%b - %o');
+
+
+// ##########################################
+// ## DO NOT EDIT BELLOW THIS LINE
+
+// The version of the configuration should match
+// the expected version of the hooks.
+//
+// In case it's not, please check the hook-config.php.template file.
+define('CONFIG_VERSION', '0.2.0');
